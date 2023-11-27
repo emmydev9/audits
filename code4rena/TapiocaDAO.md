@@ -5,13 +5,13 @@ The code under review can be found in [2023-07-tapioca](https://github.com/code-
 
 | ID | Description | Severity |
 | - | - | - |
-| [M-01](#m-01-a-malicious-user-could-set-the-allowable-slippage-in-withdrawAllMarketFees-to-zero-and-sandwich-all-market-fees.) | A malicious user could set the allowable slippage in withdrawAllMarketFees to zero and sandwich all market fees. | Medium |
-| [H-01](#h-01-dangerous-delegatecall-to-arbitrary-address.)| Dangerous delegatecall to arbitrary address. | High |
-| [H-02](#h-02-reentrancy-on-flashloan-allows-bypassing-maxflashloan-limit.) | Reentrancy on flashloan allows bypassing maxFlashLoan limit. | High |
+| [M-01](#m-01-a-malicious-user-could-set-the-allowable-slippage-in-withdrawallmarketfees-to-zero-and-sandwich-all-market-fees) | A malicious user could set the allowable slippage in withdrawAllMarketFees to zero and sandwich all market fees. | Medium |
+| [H-01](#h-01-dangerous-delegatecall-to-arbitrary-address)| Dangerous delegatecall to arbitrary address. | High |
+| [H-02](#h-02-reentrancy-on-flashloan-allows-bypassing-maxflashloan-limit) | Reentrancy on flashloan allows bypassing maxFlashLoan limit. | High |
 
 ## M-01 A malicious user could set the allowable slippage in withdrawAllMarketFees to zero and sandwich all market fees.
 
-## vulnerability detail
+## Vulnerability Details
 Penrose.withdrawAllMarketFees allows anyone to call the function but the swapData_ passed is not validated.
 This is problematic because a malicious user can set the minAssetAmount of swapData_ to zero while sandwiching the swap within the swappers.
 We can see that swapData_ is not validated
@@ -34,7 +34,7 @@ function withdrawAllMarketFees(
         emit ProtocolWithdrawal(markets_, block.timestamp);
     }
 ```
-## proof of concept
+## Proof of Concept
 but the value set within the calldata is used as a slippage amount in _depositFeesToYieldBox.
 https://github.com/Tapioca-DAO/tapioca-bar-audit/blob/2286f80f928f41c8bc189d0657d74ba83286c668/contracts/Penrose.sol#L500
 
@@ -88,11 +88,13 @@ A malicious user could pass zero as the slippage amount and sandwich the swap wh
 ## Recommendation
 The easier solution would be to allow only trusted parties to call withdrawAllMarketFees by adding access control to withdrawAllMarketFees.
 
+
 ## H-01 Dangerous delegatecall to arbitrary address.
 ## vulnerability detail
 Delegatecall to arbitrary address could lead destruction or draining of module contracts.
 
-## proof of concept
+## Proof of Concept
+
 Modules are chuck of code to perform specific task, these contracts splits the protocols functionalities in small parts.
 but within these modules delegatecall are made to any arbitrary address passed to the functions, this could be dangerous because it uses delegatecall that preserves the context of the caller.
 For Instance,
@@ -176,11 +178,12 @@ https://github.com/Tapioca-DAO/tapioca-bar-audit/blob/master/contracts/usd0/modu
 Instead of using the address passed to the function, could use address(this).delegatecall instead. or
 module address passed to these functions should be validated and checked against module contracts deployed within the appropriate chain.
 
+
 ## [H-02] Reentrancy on flashloan allows bypassing maxFlashLoan limit.
-## vulnerability detail
+## vulnerability details
 Malicious users could have access to more tokens than intended by the protocol.
 
-## proof of concept
+## Proof of Concept
 A malicious user can bypass the maxFlashMint by utilizing reentrancy.
 In USDO.flashLoan:
 ```solidity
